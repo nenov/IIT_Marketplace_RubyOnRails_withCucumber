@@ -1,0 +1,48 @@
+<h1>New add</h1>
+
+<a class="btn" href="/adverts/"><i class=" icon-circle-arrow-left"></i></a><b> Give up? Go back</b><br/><br/><br/>
+
+<%= form_for @advert, html: {multipart: true} do |f| %>
+
+<% if @advert.errors.any?%>
+    <div id="error_explanation">
+      <div class="alert alert-error">
+        The form contains <%= pluralize(@advert.errors.count, "error") %>.
+      </div>
+      <ul>
+        <% @advert.errors.full_messages.each do |msg| %>
+            <li>* <%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+<% end %>
+
+<div class="field">
+  <b>Tick this if you want this to be a reverse advert</b>
+  <%=f.check_box :reverse%><br/><br/><br/>
+</div>
+
+  <div class="field">
+    <%= f.label :title, "Title" %><br />
+    <%= f.text_field :title %><br/><br/><br/>
+  </div>
+
+  <div class="field">
+    <%= f.label :description, "Description" %><br/>
+    <%= f.text_area :description %><br/><br/><br/>
+  </div>
+
+  <div class="field">
+    <%= f.label :price, "Price (USD):"%><br/>
+    <%= f.text_field :price%><br/><br/><br/>
+  </div>
+
+  <div class="field">
+    <%= f.label :advertphoto, "Add photo to your ad"%>
+    <%= f.file_field :advertphoto%><br/><br/><br/>
+  </div>
+
+  <div class="action">
+    <%= f.submit "Continue", class: "btn btn-success" %>
+  </div>
+<% end %> 

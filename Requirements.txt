@@ -1,0 +1,20 @@
+Requirements :
+-different categories
+-reverse ads
+-search engine and filters
+-map integration
+-targeted ads
+-iit.edu email mandatory
+-allow user feedback
+-ads and reverse ads matching
+-fixed prices
+-comments and "karma"
+-messaging system
+
+Categories :
+-bazaar
+-housing
+-carpooling
+-tickets & events
+
+We're gonna need beta testers

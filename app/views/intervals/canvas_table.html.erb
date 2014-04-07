@@ -1,0 +1,567 @@
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js">
+</script>
+
+<script type="text/javascript">
+
+/*This is Browser Detector !*/
+var BrowserDetect = {
+	init: function () {
+		this.browser = this.searchString(this.dataBrowser) || "An unknown browser";
+		this.version = this.searchVersion(navigator.userAgent)
+			|| this.searchVersion(navigator.appVersion)
+			|| "an unknown version";
+		this.OS = this.searchString(this.dataOS) || "an unknown OS";
+	},
+	searchString: function (data) {
+		for (var i=0;i<data.length;i++)	{
+			var dataString = data[i].string;
+			var dataProp = data[i].prop;
+			this.versionSearchString = data[i].versionSearch || data[i].identity;
+			if (dataString) {
+				if (dataString.indexOf(data[i].subString) != -1)
+					return data[i].identity;
+			}
+			else if (dataProp)
+				return data[i].identity;
+		}
+	},
+	searchVersion: function (dataString) {
+		var index = dataString.indexOf(this.versionSearchString);
+		if (index == -1) return;
+		return parseFloat(dataString.substring(index+this.versionSearchString.length+1));
+	},
+	dataBrowser: [
+		{
+			string: navigator.userAgent,
+			subString: "Chrome",
+			identity: "Chrome"
+		},
+		{ 	string: navigator.userAgent,
+			subString: "OmniWeb",
+			versionSearch: "OmniWeb/",
+			identity: "OmniWeb"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Apple",
+			identity: "Safari",
+			versionSearch: "Version"
+		},
+		{
+			prop: window.opera,
+			identity: "Opera",
+			versionSearch: "Version"
+		},
+		{
+			string: navigator.vendor,
+			subString: "iCab",
+			identity: "iCab"
+		},
+		{
+			string: navigator.vendor,
+			subString: "KDE",
+			identity: "Konqueror"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Firefox",
+			identity: "Firefox"
+		},
+		{
+			string: navigator.vendor,
+			subString: "Camino",
+			identity: "Camino"
+		},
+		{		// for newer Netscapes (6+)
+			string: navigator.userAgent,
+			subString: "Netscape",
+			identity: "Netscape"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "MSIE",
+			identity: "Explorer",
+			versionSearch: "MSIE"
+		},
+		{
+			string: navigator.userAgent,
+			subString: "Gecko",
+			identity: "Mozilla",
+			versionSearch: "rv"
+		},
+		{ 		// for older Netscapes (4-)
+			string: navigator.userAgent,
+			subString: "Mozilla",
+			identity: "Netscape",
+			versionSearch: "Mozilla"
+		}
+	],
+	dataOS : [
+		{
+			string: navigator.platform,
+			subString: "Win",
+			identity: "Windows"
+		},
+		{
+			string: navigator.platform,
+			subString: "Mac",
+			identity: "Mac"
+		},
+		{
+			   string: navigator.userAgent,
+			   subString: "iPhone",
+			   identity: "iPhone/iPod"
+	    },
+		{
+			string: navigator.platform,
+			subString: "Linux",
+			identity: "Linux"
+		}
+	]
+
+};
+BrowserDetect.init();
+/* Detector end!!  */
+
+
+
+var COLUMN_WIDTH = 100;
+var ROW_HEIGHT = 40;
+var startX,startY, endX, endY;
+var paint = false;
+var modifypaint = false;
+var week = new Array("Sun", "Mon", "Tue", "Wed", "Thu","Fri", "Sat");
+
+var intervals = new Array();
+var intervalIndex = 0;
+
+if((BrowserDetect.browser == "Explorer") && (BrowserDetect.version <= 8))
+{
+	var leftbutton = 1;
+	var rightbutton = 2;
+	var midbutton = 4;
+}
+else
+{
+	var leftbutton = 0;
+	var rightbutton = 2;
+	var midbutton = 1;
+}
+
+
+var black = "#000000";
+var gray = "#888888";
+var white ="#FFFFFF";
+var darkblue="#04477C";
+
+var lightRect = undefined;
+var currentstanding = new Object();
+var isinRect = false;
+var teststanding = new Object(); 
+
+
+
+function drawGrid()
+{
+	var c=document.getElementById("delivery_data");
+	var ctx=c.getContext("2d");
+	for(i=COLUMN_WIDTH; i<7*COLUMN_WIDTH; i+=COLUMN_WIDTH)
+	{
+		ctx.moveTo(i,0);
+	    ctx.lineTo(i,7*COLUMN_WIDTH);
+	    ctx.stroke();
+	}
+
+    var j=0;
+
+	for(i=35; i<=635; i+=COLUMN_WIDTH)
+	{
+		ctx.font = "20px Times New Roman";
+	    ctx.fillText(week[j], i, 20);
+	    j++;
+	}
+
+	ctx.moveTo(0, 40);
+	ctx.lineTo(700,40);
+	ctx.stroke();
+
+	c=document.getElementById("timeline");
+    ctx=c.getContext("2d");
+    var img=document.getElementById("timeimage");
+    document.getElementById("timeimage").style.visibility="hidden";
+    ctx.drawImage(img, 0, 40);
+
+    ctx=c.getContext("2d");
+    ctx.fillStyle = black;
+    ctx.font="bold 15px Arial";
+    var j=7;
+    for(var i=50; i<700; i=i+41.25)
+    {
+    	if(j>16)
+    	{
+    		ctx.fillStyle = white;
+    	}
+    	ctx.fillText(j, 50, i);
+    	j++;
+    }
+
+}
+
+function changeCoordiToTime(event)
+{   
+	var x=event.pageX - $("#delivery_data").position().left;
+	var y=event.pageY - $("#delivery_data").position().top;
+	var changeddate = new Object(); 
+	changeddate.day=week[Math.floor(x/COLUMN_WIDTH)];
+    changeddate.time=Math.floor((23-7+1)*60*(y-ROW_HEIGHT)/$("canvas").height());
+	changeddate.hour = 7 + Math.floor(changeddate.time/60);
+	changeddate.minutes = changeddate.time % 60;
+	changeddate.minutes -= changeddate.minutes%5;
+	return changeddate;
+}
+
+function showTime(event)
+{
+	var x=event.pageX - $("canvas").position().left;
+	var y=event.pageY - $("canvas").position().top;
+    var date = new Object();
+    date = changeCoordiToTime(event);
+
+    if(date.time>=0 && date.time<=60*(23-7))
+    {
+    	var e = document.getElementById('thedate');
+	    e.innerHTML=date.day + " at " + date.hour +" : " + date.minutes;
+	    e.style.left=x+15+$("canvas").position().left+"px"; 
+	    e.style.top=y+$("canvas").position().top+"px";
+    }
+
+
+}
+
+function clearTime()
+{
+	var e = document.getElementById('thedate');
+	e.innerHTML="";
+}
+
+function findRect(event)
+{
+	currentstanding.py = event.pageY - $("canvas").position().top;
+	currentstanding.day = changeCoordiToTime(event).day;
+	for(var index = 0; index <intervalIndex+1; index++)
+	{
+		if((currentstanding.py < intervals[index].ey) && (currentstanding.py > intervals[index].sy) && (currentstanding.day == intervals[index].day))
+		{
+			return index;
+		}
+	}
+
+}
+
+function recordposition(event)
+{
+		
+	var x=event.pageX - $("canvas").position().left;
+	var y=event.pageY - $("canvas").position().top;
+	startX = x;
+	startY = y;
+	paint = true;
+
+}
+
+
+function findColumn(x)
+{
+    var columnS = Math.floor(x/COLUMN_WIDTH);
+    return columnS*100+5;
+}
+
+function drawRect(sx, sy, ey, rectcolor)
+{
+
+	var r = document.getElementById("delivery_data");
+	var rec = r.getContext("2d");
+	rec.fillStyle = rectcolor;
+	var drawcolumn = findColumn(sx);
+	if(ey>sy)
+	{
+		rec.clearRect(drawcolumn, sy, 90, ey);
+		rec.fillRect(drawcolumn, sy, 90, ey-sy+1);
+	}
+
+}
+
+
+function setdrawRect(status, event)
+{
+	paint = status;	 
+	var x=event.pageX - $("canvas").position().left;
+	var y=event.pageY - $("canvas").position().top;
+	endX = x;
+	endY = y;
+}
+
+
+
+
+function newInterval(event)
+{
+	var Inter = new Object();
+	var meetTime = new Object();
+    meetTime = changeCoordiToTime(event);
+    Inter.day = meetTime.day;
+    Inter.starthour = meetTime.hour;
+    Inter.startminutes = meetTime.minutes;
+    Inter.endhour = 0;
+    Inter.endminutes = 0;
+    Inter.sx = startX;
+    Inter.sy = startY;
+    Inter.ex = 0;
+    Inter.ey = 0;
+    intervals[intervalIndex] = Inter;
+}
+
+function setTheInterval(event)
+{
+	var meetTime = new Object();
+	meetTime = changeCoordiToTime(event);
+	intervals[intervalIndex].endhour = meetTime.hour;
+	intervals[intervalIndex].endminutes = meetTime.minutes;
+	intervals[intervalIndex].ex = endX;
+    intervals[intervalIndex].ey = endY;
+	if(intervals[intervalIndex].sy > intervals[intervalIndex].ey)
+	{
+		var temp;
+		temp = intervals[intervalIndex].starthour;
+		intervals[intervalIndex].starthour = intervals[intervalIndex].endhour;
+		intervals[intervalIndex].endhour = temp;
+		temp = intervals[intervalIndex].startminutes;
+		intervals[intervalIndex].startminutes = intervals[intervalIndex].endminutes;
+		intervals[intervalIndex].endminutes = temp;
+
+	    temp = intervals[intervalIndex].sy;
+		intervals[intervalIndex].sy = intervals[intervalIndex].ey;
+		intervals[intervalIndex].ey = temp;
+	}
+
+	if(intervals[intervalIndex].sx > intervals[intervalIndex].ex)
+	{
+		temp = intervals[intervalIndex].sx;
+		intervals[intervalIndex].sx = intervals[intervalIndex].ex;
+		intervals[intervalIndex].ex = temp;
+	}
+
+
+	intervalIndex = intervalIndex + 1;
+
+}
+
+
+function highLightRect(event)
+{
+	lightRect = undefined;
+	lightRect = findRect(event);
+	var c=document.getElementById("delivery_data");
+    var rect=c.getContext("2d");
+
+    if(lightRect!=undefined)
+    {
+    	var drawcolumn = findColumn(intervals[lightRect].sx);
+    	rect.fillStyle = gray;
+        rect.clearRect(drawcolumn, intervals[lightRect].sy, 90, intervals[lightRect].ey-intervals[lightRect].sy+1);
+        rect.fillRect(drawcolumn, intervals[lightRect].sy, 90, intervals[lightRect].ey-intervals[lightRect].sy+1);
+    }
+    isinRect = true;
+
+}
+
+
+function showtheIntervals()
+{
+	if(intervals[0].sy != 0)
+	{
+		var c=document.getElementById("delivery_data");
+        var rect=c.getContext("2d");
+        for(var i=0; i<intervals.length; i++)
+        {
+    	    var drawcolumn = findColumn(intervals[i].sx);
+    	    rect.fillStyle = black;
+            rect.clearRect(drawcolumn, intervals[i].sy, 90, intervals[i].ey-intervals[i].sy+1);
+            rect.fillRect(drawcolumn, intervals[i].sy, 90, intervals[i].ey-intervals[i].sy+1);
+        }
+	}
+
+	isinRect = false;
+}
+
+
+function deleteRect()
+{
+	var ct = document.getElementById("delivery_data");
+	var rectan = ct.getContext("2d");
+	var thedrawcolumn = findColumn(intervals[lightRect].sx);
+	rectan.clearRect(thedrawcolumn, intervals[lightRect].sy-15, 90, intervals[lightRect].ey+15);
+}
+
+function modifyTheRect()
+{
+	deleteRect();
+	modifypaint = true;
+}
+
+
+
+function setTheModify(event)
+{
+	var modifythetime = new Object();
+	modifythetime = changeCoordiToTime(event)
+	y = event.pageY - $("canvas").position().top;
+	intervals[lightRect].ey = y;
+	intervals[lightRect].endhour = modifythetime.hour;
+	intervals[lightRect].endminutes = modifythetime.minutes;
+	modifypaint = false;
+}
+
+Array.prototype.remove = function(x)
+{
+	if(x<this.length-1)
+	{
+		for(var i=x; i<this.length; i++)
+	    {
+		    this[i]=this[i+1];
+	    }
+	    this[this.length-1] = undefined;
+	}
+	else
+	{
+		this[x] = undefined;
+	}
+
+	this.length = this.length-1;
+	intervalIndex= intervalIndex-1;
+}
+
+function deletion()
+{
+	deleteRect();
+	intervals.remove(lightRect);
+	if(intervals[0]==undefined)
+	{
+		lightRect = undefined;
+		isinRect = false;
+	}
+}
+
+function showTimeInRect()
+{
+	var tr=document.getElementById("delivery_data");
+    var timerect=tr.getContext("2d");
+    var tdrawcolum = findColumn(intervals[intervalIndex-1].sx)+25;
+    timerect.font="15px Arial";
+    timerect.fillStyle = darkblue;
+    timerect.fillText(intervals[intervalIndex-1].starthour + " : " + intervals[intervalIndex-1].startminutes, tdrawcolum, intervals[intervalIndex-1].sy);
+    timerect.fillText(intervals[intervalIndex-1].endhour + " : " + intervals[intervalIndex-1].endminutes, tdrawcolum, intervals[intervalIndex-1].ey+13);
+}
+
+/*function checkinRect(event)
+{
+    teststanding.py = event.pageY - $("canvas").position().top;
+	teststanding.day = changeCoordiToTime(event).day;
+	for(var inde = 0; inde <intervalIndex; inde++)
+	{
+		if((teststanding.py > (intervals[inde].sy-20)) && (teststanding.day == intervals[inde].day) && (teststanding.py < intervals[inde].sy))
+		{
+			return false;
+			alert("works!");
+		}
+	}
+}*/
+
+
+$(document).ready(function(){  
+    $(document).bind("contextmenu",function(e){   
+          return false;   
+    });
+});
+
+
+function mouseDownManger(event)
+{
+	if(event.button == leftbutton)
+	{
+
+		if(isinRect==false)
+		{
+	        recordposition(event);
+	        newInterval(event);
+	    }
+	    else
+	    {
+	        modifyTheRect();	
+	    }
+	}
+	else if(event.button == rightbutton)
+	{
+		deletion();
+	}
+}
+
+function mouseUpManger(event)
+{
+	if(event.button == leftbutton)
+	{
+		if(isinRect == false)
+		{
+			setdrawRect(false, event);
+	        setTheInterval(event);
+	    }
+	    else
+	    {
+		    setTheModify(event);
+	    }
+
+	    showTimeInRect();
+
+	}
+
+}
+
+function mouseMoveManger(event)
+{
+	var x=event.pageX - $("canvas").position().left;
+	var y=event.pageY - $("canvas").position().top;
+	showTime(event);
+
+	if(paint == true)
+	{
+	    endX = x;
+	    endY = y;
+		drawRect(startX, startY, endY, black);
+   	}
+   	else if(modifypaint == true)
+   	{
+   	    endX = x;
+	    endY = y;
+   		var temp = findColumn(intervals[lightRect].sx);
+   		drawRect(temp, intervals[lightRect].sy, endY, black);
+   	}  	
+   	else
+   	{
+   		showtheIntervals();
+   		highLightRect(event);
+   	}
+   		
+}
+</script>
+
+
+
+<body id="timetable" onload="drawGrid()">
+
+    <p id="thedate" style="position:absolute"></p>
+    <canvas id = "delivery_data" width="700" height= "700" style="border:2px solid #000000;" onmousemove="mouseMoveManger(event)" onmouseout = "clearTime()" onmousedown = "mouseDownManger(event)" onmouseup = "mouseUpManger(event)">Your browser does not support HTML5! Please update your browser or use Chrome. 
+    </canvas>
+    <canvas id="timeline" width="100" height="700" style="border:2px solid #000000;">Check your browers please.</canvas>
+    <div id="meetingday" style="position:relative" ></div>
+    <img id="timeimage" src="/assets/timeline.png" alt="timeline">
+</body>

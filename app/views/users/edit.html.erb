@@ -1,0 +1,29 @@
+<% provide(:title, "Edit user") %>
+<h1>Update your profile</h1>
+
+<div class="row">
+  <div class="span6 offset3">
+    <%= form_for(@user) do |f| %>
+        <%= render 'shared/error_messages' %>
+
+        <%= f.label :name %>
+        <%= f.text_field :name %>
+        <%= f.submit "Change name", class: "btn btn-large btn-primary" %>
+     <% end %>
+
+     <%= form_tag(change_password_user_path(@user), :method =>"post") do %>
+
+        <%= label_tag :current_password, "Current password" %>
+        <%= password_field_tag :current_password %>
+
+        <%= label_tag :new_password, "New password" %>
+        <%= password_field_tag :new_password %>
+
+        <%= label_tag :new_password_confirmation, "New password confirmation" %>
+        <%= password_field_tag :new_password_confirmation %>
+
+        <%= submit_tag "Change password", class: "btn btn-large btn-primary" %>
+    <% end %>
+
+  </div>
+</div>

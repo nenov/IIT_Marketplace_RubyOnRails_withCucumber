@@ -1,0 +1,42 @@
+<%= form_for @interval do |f| %>
+ <div class="field">
+    <%= f.label :day, "Day" %><br/>
+    <%= f.select(:day, [["Monday", "Monday"], ["Tuesday", "Tuesday"], ["Wednesday", "Wednesday"], ["Thursday", "Thursday"], ["Friday", "Friday"], ["Saturday", "Saturday"], ["Sunday", "Sunday"]]) %>
+  </div>
+
+
+	<%hours = [] 
+	  (7..23).each do |hour|
+		hours.push(["#{hour}", hour])
+	  end%>
+
+ <div class="field">
+    <%= f.label :start_hour, "Start hour" %><br/>
+	<%= f.select(:start_hour, options_for_select(hours) )%>
+ </div>
+
+ <%minutes = [] 
+	  (0..11).each do |minute|
+		minutes.push(["#{minute*5}", minute*5])
+	  end%>
+
+<div class="field">
+    <%= f.label :start_minute, "Start minute" %><br/>
+	<%= f.select(:start_minute, options_for_select(minutes) )%>
+ </div>
+
+ <div class="field">
+    <%= f.label :end_hour, "End hour" %><br/>
+	<%= f.select(:end_hour, options_for_select(hours) )%>
+ </div>
+
+  <div class="field">
+    <%= f.label :end_minute, "End minute" %><br/>
+	<%= f.select(:end_minute, options_for_select(minutes) )%>
+ </div>
+
+   <div class="action">
+    <%= f.submit "Submit !", class: "btn btn-success"%>
+  </div>
+
+<% end %>

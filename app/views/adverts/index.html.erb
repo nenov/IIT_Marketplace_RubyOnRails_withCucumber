@@ -1,0 +1,28 @@
+<% provide(:title, "Ads") %>
+<h1>Adverts</h1>
+
+Stuff people are selling:
+<ul>
+  <% @adverts.each do |ad| %>
+      <li>
+        <%= link_to ad.title, ad%>
+      </li>
+  <% end %>
+</ul>
+
+
+<%= link_to "New ad", new_advert_path%><br/><br/><br/><br/>
+
+
+Stuff people are looking for:
+<ul>
+  <% @reverseadverts.each do |ad| %>
+      <li>
+        <%= link_to ad.title, ad%>
+      </li>
+  <% end %>
+</ul>
+
+<%= link_to "New ad", new_advert_path%><br/><br/><br/><br/>
+
+<%= debug(params) if Rails.env.development? %>

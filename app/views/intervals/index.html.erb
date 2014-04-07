@@ -1,0 +1,9 @@
+<h1>You are available on:</h1>
+
+<ul>
+  <%@intervals.each do |interval| %>
+    <li><%=interval.day%> from <%=interval.start_hour%>:<%=interval.start_minute%> to <%=interval.end_hour%>:<%=interval.end_minute%><br/>
+    <%= link_to "Edit", edit_interval_path(interval) %>
+    </li>
+  <%end%>
+</ul>

@@ -1,0 +1,21 @@
+<% provide(:title, @user.name) %>
+<div>
+    <h1 text-align: center>Welcome to the IIT Marketplace!</h1>
+  </div>
+<div class="row">
+  <aside class="span4">
+    <section>
+      <h1>
+        <%= @user.name %> <%= link_to "Edit profile", edit_user_path(@user)%>
+      </h1>
+      </section>
+      <section>
+      <h2>
+        <%= @user.email %>
+      </h2>
+    </section>
+  </aside>
+</div>
+
+<%= link_to "Available Delivery Times", user_intervals_path(@user)%>
+
