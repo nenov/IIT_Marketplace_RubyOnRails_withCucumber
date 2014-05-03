@@ -1,0 +1,1 @@
+A site made with RubyOnRails with tests in Cucumber. It was developed by a team of 4 for my Software Engineering class in IIT, Chicago
